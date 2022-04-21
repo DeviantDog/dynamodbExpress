@@ -26,7 +26,22 @@ app.get('/', async (req, res) => {
     res.status(200).send(scanResults);
 });
 
-app.post('/additem', async (req, res) => {
+app.get('/:id', async (req, res) => {
+    console.log(req.params.id);
+    let params: any = {
+        TableName: process.env.databaseTable,
+        Key: {
+            "id": req.params.id,
+        },
+    }
+    
+    let scanResults: AWS.DynamoDB.DocumentClient.AttributeMap[] = [];
+    let item = await documentClient.get(params).promise();
+
+    res.status(200).send(item);
+});
+
+app.post('/', async (req, res) => {
     // tslint:disable-next-line:no-console
     console.log(req.body);
 
@@ -47,6 +62,27 @@ app.post('/additem', async (req, res) => {
         return res.send(err);
     }
     return res.status(200).send({ body: 'OK!' });
+});
+
+app.delete('/:id', async (req, res) => {
+    // tslint:disable-next-line:no-console
+    console.log(req.params.id);
+
+    const params = {
+        TableName: process.env.databaseTable,
+        Key: {
+            "id": req.params.id,
+        },
+    }
+    try {
+        const data = await documentClient.delete(params).promise();
+    }
+    catch (err) {
+        // tslint:disable-next-line:no-console
+        console.log(err);
+        return res.send(err);
+    }
+    return res.status(204).send();
 });
 
 app.listen(port, () => {
